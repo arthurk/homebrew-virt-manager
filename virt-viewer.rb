@@ -1,11 +1,14 @@
 class VirtViewer < Formula
   desc "App for virtualized guest interaction"
   homepage "https://virt-manager.org/"
-  url "https://virt-manager.org/download/sources/virt-viewer/virt-viewer-10.0.tar.xz"
-  sha256 "d23bc0a06e4027c37b8386cfd0286ef37bd738977153740ab1b6b331192389c5"
+  url "https://virt-manager.org/download/sources/virt-viewer/virt-viewer-11.0.tar.xz"
+  sha256 "a43fa2325c4c1c77a5c8c98065ac30ef0511a21ac98e590f22340869bad9abd0"
 
+  depends_on "cmake" => :build
   depends_on "intltool" => :build
   depends_on "libtool" => :build
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
 
   depends_on "atk"
@@ -23,16 +26,17 @@ class VirtViewer < Formula
   depends_on "spice-gtk"
   depends_on "spice-protocol"
 
+  patch do
+    url "https://gist.githubusercontent.com/PeterSurda/54e8302a7275a3234670a0d75a2baa6f/raw/4d4e3d33cb7e0708a31bfba98640335ef1fc7ea5/virt-viewer_meson_build.patch"
+    sha256 "4e1fea7170536348ec79091c451fe29239f27b5eb0d4bf1392b5ca024fcf5e7f"
+  end
+
   def install
-    args = %W[
-      --disable-silent-rules
-      --disable-update-mimedb
-      --with-gtk-vnc
-      --with-spice-gtk
-      --prefix=#{prefix}
-    ]
-    system "./configure", *args
-    system "make", "install"
+    mkdir "build" do
+      system "meson", *std_meson_args, ".."
+      system "ninja"
+      system "ninja", "install"
+    end
   end
 
   def post_install
